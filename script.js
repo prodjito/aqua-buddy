@@ -800,6 +800,34 @@ class AquaBuddyApp {
 }
 
 let app;
+
+// Register Service Worker for PWA functionality
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then((registration) => {
+                console.log('ServiceWorker registered:', registration);
+            })
+            .catch((error) => {
+                console.log('ServiceWorker registration failed:', error);
+            });
+    });
+}
+
+// Request notification permission
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().then((permission) => {
+            console.log('Notification permission:', permission);
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     app = new AquaBuddyApp();
+    
+    // Request notification permission after a short delay
+    setTimeout(() => {
+        requestNotificationPermission();
+    }, 2000);
 });
