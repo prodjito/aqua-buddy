@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aqua Buddy - Stay Hydrated!</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Mock Phone Frame -->
+    <div class="phone-frame">
+        <div class="phone-screen">
+
+            <!-- Main Screen -->
+            <div id="main-screen" class="screen active">
+                <div class="header">
+                    <h1 class="app-title">Aqua Buddy</h1>
+                    <div class="header-icons">
+                        <button class="icon-btn" id="settings-btn" aria-label="Settings">⚙️</button>
+                    </div>
+                </div>
+
+                <!-- Aqua Buddy Character -->
+                <div class="aqua-buddy-container">
+                    <div class="aqua-buddy" id="aqua-buddy">
+                        <div class="buddy-face">
+                            <div class="buddy-eyes">
+                                <div class="eye left-eye">
+                                    <div class="pupil"></div>
+                                </div>
+                                <div class="eye right-eye">
+                                    <div class="pupil"></div>
+                                </div>
+                            </div>
+                            <div class="buddy-mouth"></div>
+                        </div>
+                        <div class="buddy-accessories" id="buddy-accessories"></div>
+                    </div>
+                    <div class="buddy-message" id="buddy-message">Let's drink some water together! 💧</div>
+                </div>
+
+                <!-- Water Meter -->
+                <div class="water-meter-section">
+                    <h2 class="section-title">Today's Progress</h2>
+                    <div class="water-meter">
+                        <div class="water-fill" id="water-fill"></div>
+                        <div class="water-droplets" id="water-droplets"></div>
+                    </div>
+                    <div class="progress-text" id="progress-text">0 / 8 glasses</div>
+                </div>
+
+                <!-- Log Water Button -->
+                <button class="log-water-btn" id="log-water-btn">
+                    <span class="droplet-icon">💧</span>
+                    <span class="btn-text">Log Water</span>
+                </button>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="undo-btn" id="undo-btn">
+                        <span class="btn-icon">↩️</span>
+                        <span class="btn-text">Undo Last Glass</span>
+                    </button>
+                    <button class="reset-day-btn" id="reset-day-btn">
+                        <span class="btn-icon">🔄</span>
+                        <span class="btn-text">Reset Day</span>
+                    </button>
+                </div>
+
+                <!-- Daily Goal Tracker -->
+                <div class="goal-tracker">
+                    <div class="goal-info">
+                        <span class="goal-label">Glasses Left Today:</span>
+                        <span class="goal-number" id="glasses-left">8</span>
+                    </div>
+                </div>
+
+                <!-- Reminder Banner -->
+                <div class="reminder-banner" id="reminder-banner">
+                    <span class="reminder-icon">⏰</span>
+                    <span class="reminder-text" id="reminder-text">Next reminder in 1 hour</span>
+                </div>
+
+                <!-- Bottom Navigation -->
+                <div class="bottom-nav">
+                    <button class="nav-btn active" data-screen="main-screen">
+                        <span class="nav-icon">🏠</span>
+                        <span class="nav-label">Home</span>
+                    </button>
+                    <button class="nav-btn" data-screen="progress-screen">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-label">Progress</span>
+                    </button>
+                    <button class="nav-btn" data-screen="rewards-screen">
+                        <span class="nav-icon">🏆</span>
+                        <span class="nav-label">Rewards</span>
+                    </button>
+                    <button class="nav-btn" data-screen="help-screen">
+                        <span class="nav-icon">❓</span>
+                        <span class="nav-label">Help</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Progress Screen -->
+            <div id="progress-screen" class="screen">
+                <div class="header">
+                    <h1 class="app-title">Your Progress</h1>
+                </div>
+
+                <div class="screen-content">
+                    <!-- Current Streak -->
+                    <div class="streak-banner">
+                        <div class="streak-flame">🔥</div>
+                        <div class="streak-info">
+                            <div class="streak-number" id="streak-days">0</div>
+                            <div class="streak-label">Day Streak</div>
+                        </div>
+                    </div>
+
+                    <!-- Weekly Summary -->
+                    <div class="weekly-summary">
+                        <h2 class="section-title">This Week</h2>
+                        <div class="weekly-chart" id="weekly-chart"></div>
+                    </div>
+
+                    <!-- Calendar View -->
+                    <div class="calendar-section">
+                        <h2 class="section-title">Calendar</h2>
+                        <div class="calendar-controls">
+                            <button class="month-btn" id="prev-month">◀</button>
+                            <span class="month-year" id="month-year">November 2025</span>
+                            <button class="month-btn" id="next-month">▶</button>
+                        </div>
+                        <div class="calendar-grid" id="calendar-grid"></div>
+                    </div>
+                </div>
+
+                <!-- Bottom Navigation -->
+                <div class="bottom-nav">
+                    <button class="nav-btn" data-screen="main-screen">
+                        <span class="nav-icon">🏠</span>
+                        <span class="nav-label">Home</span>
+                    </button>
+                    <button class="nav-btn active" data-screen="progress-screen">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-label">Progress</span>
+                    </button>
+                    <button class="nav-btn" data-screen="rewards-screen">
+                        <span class="nav-icon">🏆</span>
+                        <span class="nav-label">Rewards</span>
+                    </button>
+                    <button class="nav-btn" data-screen="help-screen">
+                        <span class="nav-icon">❓</span>
+                        <span class="nav-label">Help</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Rewards Screen -->
+            <div id="rewards-screen" class="screen">
+                <div class="header">
+                    <h1 class="app-title">Rewards & Stickers</h1>
+                </div>
+
+                <div class="screen-content">
+                    <!-- Achievements -->
+                    <div class="achievements-section">
+                        <h2 class="section-title">Badges</h2>
+                        <div class="badges-grid" id="badges-grid"></div>
+                    </div>
+
+                    <!-- Stickers Collection -->
+                    <div class="stickers-section">
+                        <h2 class="section-title">Sticker Collection</h2>
+                        <div class="stickers-grid" id="stickers-grid"></div>
+                    </div>
+
+                    <!-- Buddy Accessories -->
+                    <div class="accessories-section">
+                        <h2 class="section-title">Aqua Buddy Accessories</h2>
+                        <div class="accessories-grid" id="accessories-grid"></div>
+                    </div>
+                </div>
+
+                <!-- Bottom Navigation -->
+                <div class="bottom-nav">
+                    <button class="nav-btn" data-screen="main-screen">
+                        <span class="nav-icon">🏠</span>
+                        <span class="nav-label">Home</span>
+                    </button>
+                    <button class="nav-btn" data-screen="progress-screen">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-label">Progress</span>
+                    </button>
+                    <button class="nav-btn active" data-screen="rewards-screen">
+                        <span class="nav-icon">🏆</span>
+                        <span class="nav-label">Rewards</span>
+                    </button>
+                    <button class="nav-btn" data-screen="help-screen">
+                        <span class="nav-icon">❓</span>
+                        <span class="nav-label">Help</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Help & Support Screen -->
+            <div id="help-screen" class="screen">
+                <div class="header">
+                    <h1 class="app-title">Help & Support</h1>
+                </div>
+
+                <div class="screen-content">
+                    <div class="help-section">
+                        <h2 class="section-title">How to Use Aqua Buddy</h2>
+                        <div class="help-card">
+                            <div class="help-icon">💧</div>
+                            <h3>Log Your Water</h3>
+                            <p>Tap the "Log Water" button each time you finish a glass of water.</p>
+                        </div>
+                        <div class="help-card">
+                            <div class="help-icon">🎯</div>
+                            <h3>Reach Your Goal</h3>
+                            <p>Try to reach your daily water goal. The water meter shows your progress!</p>
+                        </div>
+                        <div class="help-card">
+                            <div class="help-icon">⏰</div>
+                            <h3>Reminders</h3>
+                            <p>Aqua Buddy will remind you to drink water. The reminders adjust based on your progress.</p>
+                        </div>
+                        <div class="help-card">
+                            <div class="help-icon">🏆</div>
+                            <h3>Earn Rewards</h3>
+                            <p>Complete daily goals to earn stickers, badges, and accessories for Aqua Buddy!</p>
+                        </div>
+                    </div>
+
+                    <div class="support-section">
+                        <h2 class="section-title">Need Help?</h2>
+                        <button class="support-btn" id="contact-support-btn">
+                            <span class="btn-icon">📞</span>
+                            <span>Contact Caregiver</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bottom Navigation -->
+                <div class="bottom-nav">
+                    <button class="nav-btn" data-screen="main-screen">
+                        <span class="nav-icon">🏠</span>
+                        <span class="nav-label">Home</span>
+                    </button>
+                    <button class="nav-btn" data-screen="progress-screen">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-label">Progress</span>
+                    </button>
+                    <button class="nav-btn" data-screen="rewards-screen">
+                        <span class="nav-icon">🏆</span>
+                        <span class="nav-label">Rewards</span>
+                    </button>
+                    <button class="nav-btn active" data-screen="help-screen">
+                        <span class="nav-icon">❓</span>
+                        <span class="nav-label">Help</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Settings Screen -->
+            <div id="settings-screen" class="screen">
+                <div class="header">
+                    <button class="back-btn" id="back-from-settings">← Back</button>
+                    <h1 class="app-title">Settings</h1>
+                </div>
+
+                <div class="screen-content">
+                    <!-- Daily Goal Setting -->
+                    <div class="setting-group">
+                        <h2 class="section-title">Daily Water Goal</h2>
+                        <div class="setting-control">
+                            <label for="daily-goal-input">Number of glasses per day:</label>
+                            <div class="number-input">
+                                <button class="number-btn" id="decrease-goal">-</button>
+                                <input type="number" id="daily-goal-input" min="4" max="12" value="8">
+                                <button class="number-btn" id="increase-goal">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reminder Frequency -->
+                    <div class="setting-group">
+                        <h2 class="section-title">Reminder Settings</h2>
+                        <div class="setting-control">
+                            <label for="base-reminder-frequency">Base reminder frequency (when far from goal):</label>
+                            <select id="base-reminder-frequency" class="setting-select">
+                                <option value="30">Every 30 minutes</option>
+                                <option value="60" selected>Every 1 hour</option>
+                                <option value="90">Every 1.5 hours</option>
+                                <option value="120">Every 2 hours</option>
+                            </select>
+                        </div>
+                        <div class="setting-info">
+                            <p>⚡ Reminders automatically adjust based on your daily progress!</p>
+                            <ul>
+                                <li>Less than 50% complete: More frequent reminders</li>
+                                <li>50-79% complete: Normal frequency</li>
+                                <li>80% or more: Less frequent, gentle encouragement</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Accessibility Options -->
+                    <div class="setting-group">
+                        <h2 class="section-title">Accessibility</h2>
+                        <div class="setting-control">
+                            <label for="font-size">Font Size:</label>
+                            <select id="font-size" class="setting-select">
+                                <option value="small">Small</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="large">Large</option>
+                                <option value="extra-large">Extra Large</option>
+                            </select>
+                        </div>
+                        <div class="setting-control">
+                            <label for="high-contrast">
+                                <input type="checkbox" id="high-contrast">
+                                High Contrast Mode
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Notification History -->
+                    <div class="setting-group">
+                        <h2 class="section-title">Recent Notifications</h2>
+                        <div class="notification-history" id="notification-history">
+                            <p class="empty-state">No notifications yet today</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Confetti Container for Celebrations -->
+    <div class="confetti-container" id="confetti-container"></div>
+
+    <!-- Notification Popup -->
+    <div class="notification-popup" id="notification-popup">
+        <div class="notification-buddy">💧</div>
+        <div class="notification-content">
+            <h3 class="notification-title">Time to Drink Water!</h3>
+            <p class="notification-message" id="notification-message">Your friend Aqua Buddy is waiting for you! 💙</p>
+        </div>
+        <button class="notification-close" id="close-notification">✕</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
