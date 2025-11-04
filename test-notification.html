@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #2196F3;
+        }
+        .error {
+            border-left-color: #f44336;
+        }
+        .success {
+            border-left-color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 System Notification Test</h1>
+    <p>This page will help diagnose notification issues.</p>
+
+    <div id="status" class="status">
+        <strong>Status:</strong> Checking...
+    </div>
+
+    <button onclick="checkSupport()">1. Check Browser Support</button>
+    <button onclick="requestPermission()">2. Request Permission</button>
+    <button onclick="sendTestNotification()">3. Send Test Notification</button>
+    <button onclick="sendMultipleTests()">4. Send 3 Test Notifications</button>
+
+    <div id="log" style="margin-top: 20px; padding: 15px; background: white; border-radius: 5px; max-height: 300px; overflow-y: auto;"></div>
+
+    <script>
+        const statusEl = document.getElementById('status');
+        const logEl = document.getElementById('log');
+
+        function log(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            logEl.innerHTML += `<div style="color: ${color}; margin: 5px 0;">[${time}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(message);
+        }
+
+        function checkSupport() {
+            log('Checking notification support...');
+
+            if (!('Notification' in window)) {
+                statusEl.className = 'status error';
+                statusEl.innerHTML = '<strong>❌ NOT SUPPORTED:</strong> This browser does not support notifications.';
+                log('ERROR: Notification API not supported', 'error');
+                return;
+            }
+
+            log('✅ Notification API is supported', 'success');
+            log(`Current permission: ${Notification.permission}`);
+
+            statusEl.className = 'status success';
+            statusEl.innerHTML = `<strong>✅ SUPPORTED</strong><br>Permission status: <strong>${Notification.permission}</strong>`;
+        }
+
+        function requestPermission() {
+            log('Requesting notification permission...');
+
+            if (!('Notification' in window)) {
+                log('ERROR: Notifications not supported', 'error');
+                return;
+            }
+
+            Notification.requestPermission().then(permission => {
+                log(`Permission result: ${permission}`, permission === 'granted' ? 'success' : 'error');
+                statusEl.className = `status ${permission === 'granted' ? 'success' : 'error'}`;
+                statusEl.innerHTML = `<strong>Permission:</strong> ${permission}`;
+            });
+        }
+
+        function sendTestNotification() {
+            log('Attempting to send notification...');
+
+            if (!('Notification' in window)) {
+                log('ERROR: Notifications not supported', 'error');
+                return;
+            }
+
+            if (Notification.permission !== 'granted') {
+                log('ERROR: Permission not granted. Click "Request Permission" first.', 'error');
+                return;
+            }
+
+            try {
+                const notification = new Notification('🧪 Test Notification', {
+                    body: 'If you see this as a system popup outside the browser window, notifications are working! ✅',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%234FC3F7"/><text x="50" y="70" font-size="60" text-anchor="middle">💧</text></svg>',
+                    tag: 'test',
+                    requireInteraction: false
+                });
+
+                notification.onclick = () => {
+                    log('✅ Notification was clicked!', 'success');
+                    notification.close();
+                };
+
+                notification.onshow = () => {
+                    log('✅ Notification SHOWN successfully!', 'success');
+                };
+
+                notification.onerror = (error) => {
+                    log('❌ Notification ERROR: ' + error, 'error');
+                };
+
+                log('Notification object created. Check your screen for a system popup!', 'success');
+            } catch (error) {
+                log('❌ Exception creating notification: ' + error.message, 'error');
+            }
+        }
+
+        function sendMultipleTests() {
+            log('Sending 3 test notifications with 2-second delays...');
+
+            for (let i = 1; i <= 3; i++) {
+                setTimeout(() => {
+                    const notification = new Notification(`Test ${i} of 3`, {
+                        body: `This is test notification #${i}`,
+                        tag: 'test-' + i
+                    });
+                    log(`Sent notification ${i}`, 'success');
+                }, (i - 1) * 2000);
+            }
+        }
+
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            checkSupport();
+        });
+    </script>
+</body>
+</html>

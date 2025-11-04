@@ -3,7 +3,7 @@
 
 class AquaBuddyApp {
     constructor() {
-        this.currentDate = new Date('2025-11-03');
+        this.currentDate = new Date();
         this.settings = this.loadSettings();
         this.userData = this.loadUserData();
         this.notificationTimer = null;
@@ -25,7 +25,7 @@ class AquaBuddyApp {
     loadSettings() {
         const defaultSettings = {
             dailyGoal: 8,
-            baseReminderFrequency: 60,
+            baseReminderFrequency: 0.5, // 60 minutes
             fontSize: 'medium',
             highContrast: false
         };
@@ -493,15 +493,85 @@ class AquaBuddyApp {
     }
 
     displayNotificationPopup(message) {
-        const popup = document.getElementById('notification-popup');
-        const messageEl = document.getElementById('notification-message');
+        // Try to show system notification first (works in background/closed)
+        if ('Notification' in window && Notification.permission === 'granted') {
+            this.showSystemNotification(message);
+        } else if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                    this.showSystemNotification(message);
+                }
+            });
+        }
 
-        messageEl.textContent = message;
-        popup.classList.add('show');
+        // Also show in-app popup if user is actively viewing the app
+        if (document.visibilityState === 'visible') {
+            const popup = document.getElementById('notification-popup');
+            const messageEl = document.getElementById('notification-message');
 
-        setTimeout(() => {
-            popup.classList.remove('show');
-        }, 5000);
+            messageEl.textContent = message;
+            popup.classList.add('show');
+
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 5000);
+        }
+    }
+
+    showSystemNotification(message) {
+        const todayData = this.getTodayData();
+        const progress = todayData.glasses / this.settings.dailyGoal;
+        const glassesLeft = Math.max(0, this.settings.dailyGoal - todayData.glasses);
+
+        // Create notification with progress info
+        let body = message;
+        if (glassesLeft > 0) {
+            body += `\n${todayData.glasses}/${this.settings.dailyGoal} glasses today - ${glassesLeft} to go!`;
+        } else {
+            body += `\n🎉 Goal completed! Great job!`;
+        }
+
+        // Create notification options
+        const options = {
+            body: body,
+            icon: this.getNotificationIcon(),
+            badge: this.getNotificationIcon(),
+            vibrate: [200, 100, 200],
+            tag: 'aqua-buddy-reminder',
+            requireInteraction: false,
+            silent: false,
+            renotify: false,
+            data: {
+                dateTime: Date.now(),
+                progress: progress,
+                glassesLeft: glassesLeft
+            }
+        };
+
+        try {
+            // Show notification
+            const notification = new Notification('Aqua Buddy 💧', options);
+
+            // Handle notification click
+            notification.onclick = (event) => {
+                event.preventDefault();
+                window.focus();
+                notification.close();
+            };
+
+            // Auto-close after 15 seconds
+            setTimeout(() => {
+                notification.close();
+            }, 15000);
+        } catch (error) {
+            console.error('Error showing notification:', error);
+        }
+    }
+
+    getNotificationIcon() {
+        // Try to use the app icon, fallback to a data URL
+        // This creates a simple blue circle as a fallback icon
+        return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%234FC3F7"/><text x="50" y="65" font-size="50" text-anchor="middle" fill="white">💧</text></svg>';
     }
 
     closeNotification() {
@@ -825,7 +895,7 @@ function requestNotificationPermission() {
 
 document.addEventListener('DOMContentLoaded', () => {
     app = new AquaBuddyApp();
-    
+
     // Request notification permission after a short delay
     setTimeout(() => {
         requestNotificationPermission();

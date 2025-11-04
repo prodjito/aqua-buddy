@@ -50,22 +50,24 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Handle notification clicks
+// Handle notification clicks and actions
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  
+
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
+        // If app is already open in a tab, focus it
         if (clientList.length > 0) {
           return clientList[0].focus();
         }
+        // Otherwise open a new window
         return clients.openWindow('/');
       })
   );
 });
 
-// Handle push notifications
+// Handle push notifications (for future server-side push support)
 self.addEventListener('push', (event) => {
   const options = {
     body: event.data ? event.data.text() : 'Time to drink water! 💧',
@@ -73,31 +75,22 @@ self.addEventListener('push', (event) => {
     badge: '/icon-192.png',
     vibrate: [200, 100, 200],
     tag: 'aqua-buddy-reminder',
-    requireInteraction: false,
-    actions: [
-      {
-        action: 'log',
-        title: 'Log Water'
-      },
-      {
-        action: 'dismiss',
-        title: 'Dismiss'
-      }
-    ]
+    requireInteraction: false
   };
 
   event.waitUntil(
-    self.registration.showNotification('Aqua Buddy Reminder', options)
+    self.registration.showNotification('Aqua Buddy Reminder 💧', options)
   );
 });
 
-// Handle notification action clicks
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
+// Handle messages from main app
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SCHEDULE_NOTIFICATION') {
+    // Store notification data for later use
+    const { message, delay } = event.data;
 
-  if (event.action === 'log') {
-    event.waitUntil(
-      clients.openWindow('/')
-    );
+    // Note: Service workers can't use setTimeout reliably
+    // This is a placeholder for future Periodic Background Sync implementation
+    console.log('Notification scheduled:', message, 'in', delay, 'ms');
   }
 });
