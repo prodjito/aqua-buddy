@@ -434,6 +434,14 @@ class AquaBuddyApp {
         }
 
         const todayData = this.getTodayData();
+
+        // Don't schedule reminders if daily goal is already met
+        if (todayData.glasses >= this.settings.dailyGoal) {
+            this.nextReminderTime = null;
+            this.updateReminderBanner();
+            return;
+        }
+
         const progress = todayData.glasses / this.settings.dailyGoal;
 
         let reminderDelay;
@@ -457,6 +465,12 @@ class AquaBuddyApp {
 
     showReminder() {
         const todayData = this.getTodayData();
+
+        // Don't show reminders if daily goal is already met
+        if (todayData.glasses >= this.settings.dailyGoal) {
+            return;
+        }
+
         const progress = todayData.glasses / this.settings.dailyGoal;
 
         let messages;
@@ -549,20 +563,25 @@ class AquaBuddyApp {
         };
 
         try {
-            // Show notification
-            const notification = new Notification('Aqua Buddy 💧', options);
+            // Use Service Worker API for reliable background notifications
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.ready.then((registration) => {
+                    registration.showNotification('Aqua Buddy 💧', options);
+                });
+            } else {
+                // Fallback to regular notification if service worker not available
+                const notification = new Notification('Aqua Buddy 💧', options);
 
-            // Handle notification click
-            notification.onclick = (event) => {
-                event.preventDefault();
-                window.focus();
-                notification.close();
-            };
+                notification.onclick = (event) => {
+                    event.preventDefault();
+                    window.focus();
+                    notification.close();
+                };
 
-            // Auto-close after 15 seconds
-            setTimeout(() => {
-                notification.close();
-            }, 15000);
+                setTimeout(() => {
+                    notification.close();
+                }, 15000);
+            }
         } catch (error) {
             console.error('Error showing notification:', error);
         }
