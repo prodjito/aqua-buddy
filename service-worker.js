@@ -1,12 +1,17 @@
 // Aqua Buddy Service Worker for PWA functionality and notifications
 
+// Import Firebase Messaging for background notifications
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+
 const CACHE_NAME = 'aqua-buddy-v1';
 const urlsToCache = [
   '/',
   '/index.html',
   '/styles.css',
   '/script.js',
-  '/manifest.json'
+  '/manifest.json',
+  '/firebase-config.js'
 ];
 
 // Install service worker and cache resources
@@ -92,5 +97,42 @@ self.addEventListener('message', (event) => {
     // Note: Service workers can't use setTimeout reliably
     // This is a placeholder for future Periodic Background Sync implementation
     console.log('Notification scheduled:', message, 'in', delay, 'ms');
+  }
+
+  // Handle Firebase config from main app
+  if (event.data && event.data.type === 'FIREBASE_CONFIG') {
+    const { config, vapidKey } = event.data;
+
+    try {
+      // Initialize Firebase in service worker
+      if (!firebase.apps.length) {
+        firebase.initializeApp(config);
+      }
+
+      // Initialize Firebase Messaging
+      const messaging = firebase.messaging();
+
+      // Handle background messages
+      messaging.onBackgroundMessage((payload) => {
+        console.log('Received background message:', payload);
+
+        const notificationTitle = payload.notification?.title || 'Aqua Buddy 💧';
+        const notificationOptions = {
+          body: payload.notification?.body || 'Time to drink water!',
+          icon: payload.notification?.icon || '/icon-192.png',
+          badge: '/icon-192.png',
+          vibrate: [200, 100, 200],
+          tag: 'aqua-buddy-reminder',
+          requireInteraction: false,
+          data: payload.data
+        };
+
+        return self.registration.showNotification(notificationTitle, notificationOptions);
+      });
+
+      console.log('Firebase messaging initialized in service worker');
+    } catch (error) {
+      console.error('Error initializing Firebase in service worker:', error);
+    }
   }
 });

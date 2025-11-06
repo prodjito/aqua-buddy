@@ -588,9 +588,8 @@ class AquaBuddyApp {
     }
 
     getNotificationIcon() {
-        // Try to use the app icon, fallback to a data URL
-        // This creates a simple blue circle as a fallback icon
-        return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%234FC3F7"/><text x="50" y="65" font-size="50" text-anchor="middle" fill="white">💧</text></svg>';
+        // Create a data URL for notification icon (works without external files)
+        return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="45" fill="%234FC3F7"/%3E%3Ctext x="50" y="70" font-size="60" text-anchor="middle"%3E💧%3C/text%3E%3C/svg%3E';
     }
 
     closeNotification() {
@@ -890,6 +889,99 @@ class AquaBuddyApp {
 
 let app;
 
+// Firebase Messaging instance
+let messaging = null;
+let fcmToken = null;
+
+// Initialize Firebase Messaging
+function initializeFirebaseMessaging() {
+    if (typeof firebase === 'undefined' || !firebase.apps.length) {
+        console.log('Firebase not initialized. Skipping FCM setup.');
+        return;
+    }
+
+    try {
+        messaging = firebase.messaging();
+
+        // Request notification permission and get FCM token
+        Notification.requestPermission().then((permission) => {
+            if (permission === 'granted') {
+                console.log('Notification permission granted');
+
+                // Get FCM token
+                messaging.getToken({ vapidKey: vapidKey })
+                    .then((currentToken) => {
+                        if (currentToken) {
+                            fcmToken = currentToken;
+                            console.log('FCM Token:', currentToken);
+
+                            // Save token to localStorage for potential backend use
+                            localStorage.setItem('fcm-token', currentToken);
+
+                            // Send config to service worker
+                            if (navigator.serviceWorker.controller) {
+                                navigator.serviceWorker.controller.postMessage({
+                                    type: 'FIREBASE_CONFIG',
+                                    config: firebase.app().options,
+                                    vapidKey: vapidKey
+                                });
+                            }
+                        } else {
+                            console.log('No registration token available');
+                        }
+                    })
+                    .catch((err) => {
+                        console.error('Error getting FCM token:', err);
+                    });
+            } else {
+                console.log('Notification permission denied');
+            }
+        });
+
+        // Handle foreground messages
+        messaging.onMessage((payload) => {
+            console.log('Foreground message received:', payload);
+
+            const title = payload.notification?.title || 'Aqua Buddy 💧';
+            const body = payload.notification?.body || 'Time to drink water!';
+
+            // Show in-app notification
+            displayNotificationPopup(body);
+
+            // Also show system notification if app is visible
+            if (document.visibilityState === 'visible' && 'serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then((registration) => {
+                    registration.showNotification(title, {
+                        body: body,
+                        icon: '/icon-192.png',
+                        badge: '/icon-192.png',
+                        vibrate: [200, 100, 200],
+                        tag: 'aqua-buddy-reminder'
+                    });
+                });
+            }
+        });
+
+    } catch (error) {
+        console.error('Error initializing Firebase Messaging:', error);
+    }
+}
+
+// Helper function to display in-app notification (needs to be accessible)
+function displayNotificationPopup(message) {
+    const popup = document.getElementById('notification-popup');
+    const messageEl = document.getElementById('notification-message');
+
+    if (popup && messageEl) {
+        messageEl.textContent = message;
+        popup.classList.add('show');
+
+        setTimeout(() => {
+            popup.classList.remove('show');
+        }, 5000);
+    }
+}
+
 // Register Service Worker for PWA functionality
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -914,6 +1006,11 @@ function requestNotificationPermission() {
 
 document.addEventListener('DOMContentLoaded', () => {
     app = new AquaBuddyApp();
+
+    // Initialize Firebase Messaging
+    setTimeout(() => {
+        initializeFirebaseMessaging();
+    }, 1000);
 
     // Request notification permission after a short delay
     setTimeout(() => {
